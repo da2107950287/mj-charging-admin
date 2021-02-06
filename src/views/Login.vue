@@ -1,64 +1,58 @@
 <template>
-  <div class="login-wrap">
-    <div class="login-box">
-      <div class="login-title">米京快充管理后台</div>
-      <div class="ms-login">
-        <div class="ms-title">登录</div>
-        <el-form :model="param" :rules="rules" ref="form" label-width="0px" class="ms-content">
-          <el-form-item prop="account">
-            <el-input v-model="param.account" placeholder="账号"></el-input>
-          </el-form-item>
-          <el-form-item prop="password">
-            <el-input type="password" placeholder="密码" v-model="param.password"></el-input>
-          </el-form-item>
-          <el-form-item prop="verifyCode" class="verify-code">
-            <el-input class="verify-code-input" placeholder="验证码" v-model="param.verifyCode"
-              @keyup.enter.native="submitForm()"></el-input>
-            <div @click="refreshCode" class="verify-code-button">
-              <s-identify :identifyCode="identifyCode"></s-identify>
-            </div>
-          </el-form-item>
-          <div class="login-btn">
-            <el-button type="primary" @click="submitForm()">登录</el-button>
+  <div class="page">
+    <div class="banner"></div>
+    <div class="login">
+      <div class="logo"><img src="../assets/img/logo.png"></div>
+      <div class="title"><span>欢迎登录</span></div>
+      <form class="form">
+        <div class="form-item">
+          <div class="form-item-icon"><img src="../assets/img/img1.png"></div>
+          <div class="form-item-content"><input type="text" v-model="param.account" placeholder="用户名"></div>
+        </div>
+        <div class="form-item">
+          <div class="form-item-icon"><img src="../assets/img/img2.png"></div>
+          <div class="form-item-content"><input type="password" v-model="param.password" minlength=1 maxlength=16
+              placeholder="密码"></div>
+        </div>
+        <div class="form-item">
+          <div class="form-item-icon"><img src="../assets/img/img3.png"></div>
+          <div class="form-item-content"><input type="text" v-model="param.verifyCode" placeholder="验证码">
+            <!-- <s-identify class="code" :identifyCode="identifyCode" @click="refreshCode"></s-identify> -->
+            <div class="code" @click="refreshCode">{{identifyCode}}</div>
           </div>
-        </el-form>
-      </div>
+        </div>
+        <div class="form-error">{{errMsg}}</div>
+        <div class="btn-submit" @click="submitForm">登录</div>
+      </form>
     </div>
   </div>
 </template>
-
 <script>
   import SIdentify from "../components/SIdentify";
   import { setStore } from "../assets/js/utils.js"
   export default {
     data() {
-      var validateCode = (rule, value, callback) => {
-        if (value.toLowerCase() != this.identifyCode.toLowerCase()) {
-          return callback(new Error("验证码不正确"))
-        } else {
-          return callback();
-        }
-      }
       return {
         param: {
           account: '',
           password: '',
           verifyCode: ''
         },
+        errMsg: '',
         identifyCodes: "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ",
         identifyCode: "",
         codeUrl: '',
-        checked: true,
-        rules: {
-          account: [{ required: true, message: '账号不能为空', trigger: 'blur' }],
-          password: [{ required: true, message: '密码不能为空', trigger: 'blur' }],
-          verifyCode: [
-            { required: true, message: '验证码不能为空', trigger: 'blur' },
-            { validator: validateCode, trigger: 'blur' },
-          ],
+        imgCode: ''
 
-        },
       };
+    },
+    watch: {
+      'param.password'() {
+        this.param.password = this.param.password.replace(/[\W]/g, '');
+      },
+      'param.verifyCode'() {
+        this.param.verifyCode = this.param.verifyCode.replace(/[\W]/g, '');
+      }
     },
     mounted() {
       this.refreshCode();
@@ -83,103 +77,179 @@
       },
       //登录
       submitForm() {
-        this.$refs.form.validate(valid => {
-          if (valid) {
-            this.$http('/backstage/login', this.param).then(res => {
-              if (res.code == 200) {
-                setStore('token', res.data)
-                this.$router.push('/hotel')
-              }else{
-                this.$message.error(res.msg)
-                this.refreshCode()
-              }
-            })
+        this.param.account = this.param.account.replace(/[ ]/g, "").replace(/[\r\n]/g, "");
+        this.param.password = this.param.password.replace(/[ ]/g, "").replace(/[\r\n]/g, "");
+        if (this.param.account == '') {
+          this.errMsg = '用户名不能为空'
+          return false;
+        } else if (this.param.password == '') {
+          this.errMsg = '密码不能为空'
+          return false;
+        } else if (this.param.verifyCode == '') {
+          this.errMsg = '验证码不能为空'
+          return false;
+        } else if (this.param.verifyCode.toLowerCase() != this.identifyCode.toLowerCase()) {
+          this.errMsg = '验证码不正确'
+          return false;
+        }
+        this.$http('/backstage/login', this.param).then(res => {
+          if (res.code == 200) {
+            setStore('token', res.data)
+            this.$router.push('/hotel')
+          } else {
+            this.errMsg = res.msg;
           }
         })
       }
+
+
     },
     components: {
       SIdentify
     }
   };
 </script>
-
 <style lang="scss" scoped>
-  .verify-code>.el-form-item__content {
-    width: 100% !important;
-  }
-
-  .login-wrap {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    background-image: url(../assets/img/login.png);
-    background-repeat: no-repeat;
+  .page {
+    display: flex;
+    /* object-fit: cover; */
+    background-image: url(../assets/img/bg.png);
     background-size: 100% 100%;
-  }
 
-  .login-box {
-    text-align: center;
-    width: 400px;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -70%);
-  }
 
-  .login-title {
-    font-size: 44px;
-    font-weight: 500;
-    color: #fff;
-    margin-bottom: 50px;
-  }
-
-  .ms-title {
-    width: 100%;
-    line-height: 50px;
-    text-align: center;
-    font-size: 32px;
-    color: #fff;
-
-  }
-
-  .ms-login {
-    border-radius: 5px;
-    background: rgba(255, 255, 255, 0.3);
     overflow: hidden;
+    height: 100%;
+    /* overflow-y: scroll; */
+
+
+    .banner {
+      width: 68.9%;
+      /* min-height: 100%; */
+
+
+    }
+
+    .login {
+      width: calc(100% - 68.9%);
+      text-align: center;
+      padding: 0 4.01rem 1.5rem;
+      overflow-y: scroll;
+
+
+    }
+
+    .logo {
+      width: 11.9rem;
+      margin: 0 auto;
+      margin-top: 7.35rem;
+      height: 3.35rem;
+
+      img {
+        width: 100%;
+
+      }
+
+    }
+
+    .title {
+
+      font-size: 1.8rem;
+      line-height: 3.6rem;
+      color: #000;
+      text-align: center;
+      margin-top: 6.25rem;
+
+      span {
+        padding-bottom: 0.85rem;
+        border-bottom: 1px solid #2151E9;
+      }
+    }
+
+    .form {
+      margin: 0 auto;
+      margin-top: 1.75rem;
+
+      .form-item {
+        display: flex;
+        position: relative;
+
+        line-height: 4.3rem;
+      }
+
+      .form-item-icon {
+        width: .9rem;
+        height: .9rem;
+        margin-right: .9rem;
+      }
+
+      .form-item-icon img {
+        width: 100%;
+        height: 100%;
+      }
+
+      .form-item-content {
+        width: 100%;
+      }
+
+      .form-item-content input {
+        display: inline-block;
+        width: 100%;
+        font-size: 1.2rem;
+        font-family: Source Han Sans CN;
+        font-weight: 400;
+        color: #8D8D8E;
+        line-height: 3.6rem;
+        border: none;
+        border-bottom: 1px solid #f1eff5;
+        outline: none;
+      }
+
+      .form-item-content input:hover {
+        border-bottom: 1px solid #003374;
+      }
+
+      .code {
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #cf2c09;
+        background-color: #dfdfdd;
+        padding: .25rem 0;
+        font-style: italic;
+        font-weight: 700;
+        letter-spacing: .25rem;
+        cursor: pointer;
+        width: 4.6rem;
+        text-align: center;
+        height: 1.8rem;
+        color: #cf2c09;
+        font-size: 1.2rem;
+      }
+    }
+
+    .btn-submit {
+      margin-top: 2.75rem;
+      width: 100%;
+      height: 3.9rem;
+      background: #003374;
+      border-radius: 6px;
+      font-size: 1.2rem;
+      font-family: SourceHanSansSC;
+      font-weight: 400;
+      color: #FFFFFF;
+      line-height: 3.6rem;
+      cursor: pointer;
+    }
   }
 
-  .ms-content {
-    padding: 30px 30px;
-  }
-
-  .login-btn {
-    text-align: center;
-  }
-
-  .login-btn button {
-    width: 100%;
-    height: 36px;
-    margin-bottom: 10px;
-  }
-
-  .margin0 {
-    margin-bottom: 5px;
-
-  }
-
-  .verify-code-input {
-    width: 62%;
-    margin-right: 4%;
-  }
-
-  .verify-code-button {
-    text-align: right;
-    height: 40px;
-
-    display: inline-block;
-    vertical-align: middle;
-
-
+  .form .form-error {
+    color: red;
+    font-size: .9rem;
+    margin-top: 1.5rem;
+    text-align: left;
   }
 </style>

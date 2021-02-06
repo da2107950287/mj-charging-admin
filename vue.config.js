@@ -15,7 +15,8 @@ module.exports = {
 
   },
   devServer: {
-    proxy: "http://charge.linkzl.com",
+    // proxy: "http://cd.mjcmkj.com",
+    proxy:"http://charge.linkzl.com"
     
   }
 }

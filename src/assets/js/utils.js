@@ -65,7 +65,18 @@ export function download(url, data) {
     url,
     data,
     responseType:'blob',
-    
+    transformRequest
+  }
+  function transformRequest(data) {
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        if (typeof data[key] == "object") {
+          data[key] = JSON.stringify(data[key])
+        }
+      }
+    }
+    // 对 data 进行任意转换处理,将对象序列化成URL的形式，以&进行拼接
+    return qs.stringify(data)
   }
 
   return new Promise((resolve, reject) => {
@@ -110,7 +121,7 @@ export function download(url, data) {
 
 /* 验证手机号 */
 export function isPhone(phone) {
-  let isPhone = /^[1][0-9][0-9]{9}$/;//手机号码
+  let isPhone = /^1[3|4|5|7|8][0-9]{9}$/;//手机号码
   if (!isPhone.test(phone)) {
     return false;
   };

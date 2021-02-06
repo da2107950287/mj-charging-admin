@@ -19,16 +19,16 @@
           <label class="label" for="">订单类型</label>
           <el-select v-model="olType" size="small" class="handle-search mr20">
             <el-option label="全部" value=""></el-option>
-            <el-option label="支付" value="1"></el-option>
-            <el-option label="藏宝天下登录" value="2"></el-option>
-            <el-option label="藏宝天下注册" value="3"></el-option>
-            <el-option label="藏宝么登录" value="4"></el-option>
-            <el-option label="藏宝么注册" value="5"></el-option>
+            <el-option label="付费订单" value="1"></el-option>
+            <el-option label="藏宝天下会员登录" value="2"></el-option>
+            <el-option label="藏宝天下会员注册" value="3"></el-option>
+            <el-option label="藏宝么会员登录" value="4"></el-option>
+            <el-option label="藏宝么会员注册" value="5"></el-option>
           </el-select>
         </div>
         <div>
           <el-button class="mr20" size="small" type="primary" @click="select">查询</el-button>
-          <el-button class="mr20" size="small" type="primary" @click="ExportOrderlist">导出</el-button>
+          <el-button class="mr20" size="small" type="primary" @click="exportOrderlist">导出</el-button>
         </div>
       </div>
       <div class="search-bottom">
@@ -51,9 +51,16 @@
         </div>
       </div>
       <div class="item">
-        <div class="label pointer" :style="{color:days==='0'?'#409EFF':'#000'}" @click="daysOrder('0')">今日</div>
-        <div class="label pointer" :style="{color:days==='7'?'#409EFF':'#000'}" @click="daysOrder('7')">7日</div>
-        <div class="label pointer" :style="{color:days==='30'?'#409EFF':'#000'}" @click="daysOrder('30')">30日</div>
+        <div class="label">
+          <div class="label1" :class="{active:days==='0'?true:false}" @click="daysOrder('0')">今日 </div>
+        </div>
+        <div class="label">
+          <div class="label1" :class="{active:days==='7'?true:false}" @click="daysOrder('7')">7日</div>
+        </div>
+        <div class="label">
+          <div class="label1" :class="{active:days==='30'?true:false}" @click="daysOrder('30')">30日
+          </div>
+        </div>
       </div>
       <div class="item">
         <div class="mr20">订单数：{{total}}</div>
@@ -70,19 +77,17 @@
       </div>
     </div>
     <div class="list">
-      <el-table :data="list"  class="table" ref="multipleTable" :header-cell-style="{background:'#eef1f6',color:'#333'}" header-cell-class-name="table-header">
-
+      <el-table :data="list" class="table" ref="multipleTable" :header-cell-style="{background:'#eef1f6',color:'#333'}"
+        header-cell-class-name="table-header">
         <el-table-column type="index" label="ID" width="100" align="center"></el-table-column>
-
-        <el-table-column prop="olId" label="订单号" align="center"></el-table-column>
-
-        <el-table-column label="订单类型" align="center">
+        <el-table-column prop="olId" label="订单号" width="200" align="center"></el-table-column>
+        <el-table-column label="订单类型" width="150" align="center">
           <template slot-scope="scope">
-            <div v-if="scope.row.olType==1">支付</div>
-            <div v-else-if="scope.row.olType==2">藏宝天下登录</div>
-            <div v-else-if="scope.row.olType==3">藏宝天下注册</div>
-            <div v-else-if="scope.row.olType==4">藏宝么登录</div>
-            <div v-else-if="scope.row.olType==5">藏宝么注册</div>
+            <div v-if="scope.row.olType==1">付费订单</div>
+            <div v-else-if="scope.row.olType==2">藏宝天下会员登录</div>
+            <div v-else-if="scope.row.olType==3">藏宝天下会员注册</div>
+            <div v-else-if="scope.row.olType==4">藏宝么会员登录</div>
+            <div v-else-if="scope.row.olType==5">藏宝么会员注册</div>
           </template>
         </el-table-column>
         <el-table-column prop="olPrice" label="付款金额" align="center"></el-table-column>
@@ -95,7 +100,7 @@
             <div>{{scope.row.hours}}h</div>
           </template>
         </el-table-column>
-        <el-table-column prop="payTime" label="付款时间" align="center"></el-table-column>
+        <el-table-column prop="payTime" label="付款时间" width="200" align="center"></el-table-column>
 
 
         <el-table-column label="操作" align="center">
@@ -133,7 +138,7 @@
         starttime: '',
         endtime: '',
         days: '',
-       
+        flag: 0,
         payMoney: '',//支付金额
         register2: '',//藏宝么注册
         register1: '',//藏宝天下注册
@@ -154,7 +159,6 @@
             } else {
               return time.getTime() >= _beforeDay;
             }
-
           }
         },
         isDisabled2: {
@@ -167,11 +171,8 @@
             } else {
               return time.getTime() >= _beforeDay;
             }
-
           }
         },
-
-
       }
     },
 
@@ -181,8 +182,9 @@
       this.getOrderlist()
     },
     methods: {
-      select(){
-        this.days=''
+      select() {
+        this.days = '';
+        this.PageNumber=1;
         this.getOrderlist()
       },
       orderlistRefund(olId) {
@@ -204,11 +206,21 @@
         })
       },
       daysOrder(days) {
-        this.days = days;
-        this.starttime = "";
-        this.endtime = "";
-        this.PageNumber = 1;
-        this.getOrderlist()
+        if (this.days == days) {
+          this.flag++;
+        } else {
+          this.flag = 0;
+        }
+        if (this.flag % 2 == 0) {
+          this.days = days;
+          this.PageNumber = 1;
+          this.getDayOrderList()
+        } else {
+          this.PageNumber = 1;
+          this.getOrderlist()
+          this.days = ''
+        }
+
       },
       getHotel() {
         this.$http('/backstage/getAllHotel').then(res => {
@@ -217,15 +229,12 @@
           }
         })
       },
-      getOrderlist() {
-   
+      getDayOrderList() {
         this.$http('/backstage/getOrderlist', {
           hotId: this.hotId,
           deviceId: this.deviceId,
           olType: this.olType,
           olId: this.olId,
-          starttime: this.starttime || '',
-          endtime: this.endtime || '',
           days: this.days,
           PageNumber: this.PageNumber,
           PageSize: this.PageSize
@@ -246,9 +255,43 @@
           }
         })
       },
-      ExportOrderlist() {
-
-        this.$download('/backstage/ExportOrderlist').then(res => {
+      getOrderlist() {
+        this.$http('/backstage/getOrderlist', {
+          hotId: this.hotId,
+          deviceId: this.deviceId,
+          olType: this.olType,
+          olId: this.olId,
+          starttime: this.starttime || '',
+          endtime: this.endtime || '',
+          PageNumber: this.PageNumber,
+          PageSize: this.PageSize
+        }).then(res => {
+          if (res.code == 200) {
+            this.total = res.data.count;
+            this.list = res.data.list;
+            if (this.PageNumber == 1) {
+              this.payMoney = res.data.payMoney;
+              this.register2 = res.data.register2;
+              this.register1 = res.data.register1;
+              this.refundMoney = res.data.refundMoney;
+              this.login2 = res.data.login2;
+              this.login1 = res.data.login1;
+              this.totalLogin = this.login1 + this.login2;
+              this.totalRegister = this.register1 + this.register2
+            }
+          }
+        })
+      },
+      exportOrderlist() {
+        this.$download('/backstage/ExportOrderlist', {
+          hotId: this.hotId,
+          deviceId: this.deviceId,
+          olType: this.olType,
+          olId: this.olId,
+          starttime: this.starttime || '',
+          endtime: this.endtime || '',
+          days: this.days,
+        }).then(res => {
           var blob = new Blob([res], { type: 'application/vnd.ms-excel application/x-excel' }); //type这里表示xlsx类型
           var downloadElement = document.createElement('a');
           var href = window.URL.createObjectURL(blob); //创建下载的链接
@@ -271,13 +314,20 @@
 
       //改变当前页数
       changeCurrentPage(val) {
-        this.days=''
-        this.getOrderlist();
+        if (this.flag % 2 == 0) {
+          this.getDayOrderList()
+        } else {
+          this.getOrderlist();
+
+        }
       },
       //改变每页显示条数
       handleSizeChange(val) {
-        this.days=''
-        this.getOrderlist();
+        if (this.flag % 2 == 0) {
+          this.getDayOrderList()
+        } else {
+          this.getOrderlist();
+        }
       }
     },
     components: {
@@ -293,14 +343,28 @@
 
   .pointer {
     cursor: pointer;
-   
+
   }
+
 
   .pointer:active {
     color: #409EFF;
 
   }
 
+
+  .label1 {
+    text-align: center;
+    border: 1px solid #02a7f0;
+    color: #02a7f0;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .active {
+    color: #fff;
+    background-color: #02a7f0;
+  }
 
 
   .search-box {

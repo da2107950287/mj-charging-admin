@@ -53,7 +53,7 @@
       },
       contentWidth: {
         type: Number,
-        default: 112
+        default: 90
       },
       contentHeight: {
         type: Number,
@@ -71,28 +71,31 @@
         let g = this.randomNum(min, max)
         let b = this.randomNum(min, max)
         return 'rgb(' + r + ',' + g + ',' + b + ')'
+        
       },
       drawPic () {
         let canvas = document.getElementById('s-canvas')
         let ctx = canvas.getContext('2d')
         // ctx.textBaseline = 'bottom'
         // 绘制背景
-        ctx.fillStyle = this.randomColor(this.backgroundColorMin, this.backgroundColorMax)
+        // ctx.fillStyle = this.randomColor(this.backgroundColorMin, this.backgroundColorMax)
+        ctx.fillStyle='#dfdfdd'
         ctx.fillRect(0, 0, this.contentWidth, this.contentHeight)
         // 绘制文字
         for (let i = 0; i < this.identifyCode.length; i++) {
           this.drawText(ctx, this.identifyCode[i], i)
         }
         // this.drawLine(ctx)
-        this.drawDot(ctx)
+        // this.drawDot(ctx)
       },
       drawText (ctx, txt, i) {
-        ctx.fillStyle = this.randomColor(this.colorMin, this.colorMax)
+        // ctx.fillStyle = this.randomColor(this.colorMin, this.colorMax)
+        ctx.fillStyle='#cf2c09'
         ctx.font = this.randomNum(this.fontSizeMin, this.fontSizeMax) + 'px SimHei'
         ctx.font=this.fontSizeMax+ 'px SimHei'
         let x = (i + 1) * (this.contentWidth / (this.identifyCode.length + 1))
         let y = this.randomNum(this.fontSizeMax, this.contentHeight - 5)
-        var deg = this.randomNum(-15, 15)
+        var deg = this.randomNum(0, 0)
         // 修改坐标原点和旋转角度
         ctx.translate(x, y)
         ctx.rotate(deg * Math.PI / 180)

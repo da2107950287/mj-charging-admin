@@ -35,8 +35,8 @@
         <el-table-column label="状态" align="center">
           <template slot-scope="scope">
             <span v-if="scope.row.deviceState==1">未使用</span>
-            <span v-else-if="scope.row.deviceState==2">已使用</span>
-            <span v-else-if="scope.row.deviceState==3">故障中</span>
+            <span v-else-if="scope.row.deviceState==2">使用中</span>
+            <span v-else-if="scope.row.deviceState==3">故障</span>
 
           </template>
         </el-table-column>
@@ -47,19 +47,19 @@
         <el-table-column prop="income1" label="今日收益" align="center"></el-table-column>
 
         <el-table-column prop="income2" label="累计收益" align="center"></el-table-column>
-        <el-table-column label="新拉会员" align="center">
+        <el-table-column label="新拉会员" width="100" align="center">
           <template slot-scope="scope">
             <div>藏宝么：{{scope.row.register2}}</div>
             <div>藏宝天下：{{scope.row.register1}}</div>
           </template>
         </el-table-column>
-        <el-table-column label="登录会员" align="center">
+        <el-table-column label="登录会员" width="100" align="center">
           <template slot-scope="scope">
             <div>藏宝么：{{scope.row.login2}}</div>
             <div>藏宝天下：{{scope.row.login1}}</div>
           </template>
         </el-table-column>
-        <el-table-column prop="" label="省市区" align="center">
+        <el-table-column prop="" label="省市区" width="200" align="center">
           <template slot-scope="scope">
             <div>{{scope.row.province}}{{scope.row.city}}{{scope.row.area}}</div>
           </template>
@@ -115,7 +115,12 @@
         })
       },
       exportDevice() {
-        this.$download('/backstage/ExportDevice').then(res => {
+        this.$download('/backstage/ExportDevice',{
+          hotId: this.hotId,
+          deviceId: this.deviceId,
+          deviceState: this.deviceState,
+   
+        }).then(res => {
           var blob = new Blob([res], { type: 'application/vnd.ms-excel application/x-excel' }); //type这里表示xlsx类型
           var downloadElement = document.createElement('a');
           var href = window.URL.createObjectURL(blob); //创建下载的链接

@@ -14,14 +14,14 @@
         <label class="label" style="width: 20px;" for="">省</label>
         <el-select v-model="province" filterable size="small" @change="provinceChange" class="handle-search mr20">
           <el-option label="全部" value=""></el-option>
-          <el-option v-for="item in provinceList" :key="item.value" :label="item.value" :value="item.value"></el-option>
+          <el-option v-for="item in provinceList" :key="item.label" :label="item.label" :value="item.label"></el-option>
         </el-select>
       </div>
       <div>
         <label class="label" style="width: 20px;" for="">市</label>
         <el-select v-model="city" filterable size="small" @change="cityChang" class="handle-search mr20">
           <el-option label="全部" value=""></el-option>
-          <el-option v-for="item in cityList" :key="item.value" :label="item.value" :value="item.value">
+          <el-option v-for="item in cityList" :key="item.label" :label="item.label" :value="item.label">
           </el-option>
         </el-select>
       </div>
@@ -30,7 +30,7 @@
         <label class="label" style="width: 20px;" for="">区</label>
         <el-select v-model="area" filterable size="small" class="handle-search mr20">
           <el-option label="全部" value=""></el-option>
-          <el-option v-for="item in areaList" :key="item.value" :label="item.value" :value="item.value">
+          <el-option v-for="item in areaList" :key="item.label" :label="item.label" :value="item.label">
           </el-option>
         </el-select>
       </div>
@@ -41,7 +41,8 @@
       </div>
     </div>
     <div class="list">
-      <el-table :data="list"  class="table" ref="multipleTable"  :header-cell-style="{background:'#eef1f6',color:'#333'}" header-cell-class-name="table-header">
+      <el-table :data="list" class="table" ref="multipleTable" :header-cell-style="{background:'#eef1f6',color:'#333'}"
+        header-cell-class-name="table-header">
         <el-table-column type="index" label="序号" width="100px" align="center"></el-table-column>
         <el-table-column prop="hotName" label="酒店名称" align="center"></el-table-column>
         <el-table-column prop="number1" label="活跃设备" align="center"></el-table-column>
@@ -65,7 +66,7 @@
             <div>登录：{{scope.row.login1}}</div>
           </template>
         </el-table-column>
-        <el-table-column prop="" label="省市区" align="center">
+        <el-table-column prop="" label="省市区" width="200" align="center">
           <template slot-scope="scope">
             <div>{{scope.row.province}}{{scope.row.city}}{{scope.row.area}}</div>
           </template>
@@ -100,28 +101,26 @@
     created() {
       this.getHotel();
       this.getAllHotel();
-      this.provinceList = area[0].children.map(item => {
+      this.provinceList = area.map(item => {
         return item
       })
     },
     methods: {
       provinceChange() {
-        this.city='';
-        this.area='';
+        this.city = '';
+        this.area = '';
         let index = this.provinceList.findIndex(item => {
-          return item.value == this.province
+          return item.label == this.province
         })
-  
         this.cityList = this.provinceList[index].children.map(item => {
           return item
         })
       },
       cityChang() {
-        this.area=''
+        this.area = ''
         let index = this.cityList.findIndex(item => {
-          return item.value == this.city
+          return item.label == this.city
         })
-        console.log(this.cityList[index].children)
         this.areaList = this.cityList[index].children.map(item => {
           return item
         })
@@ -150,7 +149,13 @@
       },
       ExportHotel() {
 
-        this.$download('/backstage/ExportHotel').then(res => {
+        this.$download('/backstage/ExportHotel', {
+          hotName: this.hotName,
+          province: this.province,
+          city: this.city,
+          area: this.area,
+      
+        }).then(res => {
           var blob = new Blob([res], { type: 'application/vnd.ms-excel application/x-excel' }); //type这里表示xlsx类型
           var downloadElement = document.createElement('a');
           var href = window.URL.createObjectURL(blob); //创建下载的链接

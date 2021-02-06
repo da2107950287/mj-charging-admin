@@ -10,7 +10,6 @@ VueRouter.prototype.push = function push(location) {//重写push函数
 };
 const Login = () => import('../views/Login.vue')
 const Home = () => import(/* webpackChunkName: "home" */ '../components/common/Home.vue')
-const Index = () => import(/* webpackChunkName: "home" */ '../views/Index.vue')
 const Hotel = () => import(/* webpackChunkName: "home" */ '../views/Hotel.vue')
 const Device = () => import(/* webpackChunkName: "home" */ '../views/Device.vue')
 const Order = () => import(/* webpackChunkName: "home" */ '../views/Order.vue')
@@ -30,7 +29,6 @@ const routes = [
     name: '首页',
     component: Home,
     children: [
-      { path: '/index', name: 'index', component: Index },
       { path: '/hotel', name: 'hotel', component: Hotel },
       { path: '/device', name: 'device', component: Device },
       { path: '/order', name: 'order', component: Order },

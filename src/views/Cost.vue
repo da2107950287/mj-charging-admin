@@ -15,7 +15,7 @@
         </el-table-column>
 
       </el-table>
-      <el-dialog title="编辑" center :visible.sync="dialogVisible" width="450px">
+      <el-dialog title="编辑" :close-on-click-modal="false" center :visible.sync="dialogVisible" width="450px">
         <el-form ref="form" :rules="rules" :model="form" label-width="80px">
           <el-form-item prop="price" label="费用">
             <el-input v-model="form.price" type="number" maxlength=4></el-input>

@@ -38,16 +38,21 @@
 
     </div>
     <div class="list">
-      <el-table :data="list"  class="table" ref="multipleTable" :header-cell-style="{background:'#eef1f6',color:'#333'}" header-cell-class-name="table-header">
+      <el-table :data="list" class="table" ref="multipleTable" :header-cell-style="{background:'#eef1f6',color:'#333'}"
+        header-cell-class-name="table-header">
         <el-table-column prop="hotName" label="酒店" align="center"></el-table-column>
         <el-table-column prop="roomId" label="房间号" align="center"></el-table-column>
-        <el-table-column prop="registerUid" label="注册账号" align="center"></el-table-column>
+        <el-table-column label="注册账号" align="center">
+          <template slot-scope="scope">
+            <div>{{mobile}}</div>
+          </template>
+        </el-table-column>
         <el-table-column label="姓名" align="center">
           <template slot-scope="scope">
             <div>{{fullname}}</div>
           </template>
         </el-table-column>
-        <el-table-column prop="registerTime" label="注册时间" align="center"></el-table-column>
+        <el-table-column prop="registerTime" label="注册时间" width="200" align="center"></el-table-column>
       </el-table>
       <Page :total="total" :PageNumber.sync="PageNumber" :PageSize.sync="PageSize" @current-change="changeCurrentPage"
         @size-change="handleSizeChange">
@@ -103,6 +108,8 @@
     },
     created() {
       this.uid = this.$route.query.uid;
+
+      this.mobile = this.$route.query.mobile;
       this.fullname = this.$route.query.fullname
       this.getAllHotel()
       this.getRegisterDevice();
@@ -117,10 +124,9 @@
         })
       },
       getRegisterDevice() {
-
         this.$http('/backstage/getRegisterDevice', {
           uid: this.uid,
-          mobile: this.hotId,
+          hotId: this.hotId,
           roomId: this.roomId,
           starttime: this.starttime,
           endtime: this.endtime,
@@ -134,8 +140,13 @@
         })
       },
       exportRegisterDevice() {
-
-        this.$download('/backstage/ExportRegisterDevice').then(res => {
+        this.$download('/backstage/ExportRegisterDevice', {
+          uid: this.uid,
+          hotId: this.hotId,
+          roomId: this.roomId,
+          starttime: this.starttime,
+          endtime: this.endtime,
+        }).then(res => {
           var blob = new Blob([res], { type: 'application/vnd.ms-excel application/x-excel' }); //type这里表示xlsx类型
           var downloadElement = document.createElement('a');
           var href = window.URL.createObjectURL(blob); //创建下载的链接

@@ -3,13 +3,16 @@
     <div class="update-psw">
       <el-form ref="form" :rules="rules" :model="form" label-width="100px">
         <el-form-item label="原始密码：" prop="oldpassword">
-          <el-input v-model="form.oldpassword" placeholder="请输入原始密码" class="handle-select mr10"></el-input>
+          <el-input v-model="form.oldpassword" minlength=1 maxlength=16 placeholder="请输入原始密码"
+            class="handle-select mr10"></el-input>
         </el-form-item>
         <el-form-item label="新密码：" prop="newpassword">
-          <el-input v-model="form.newpassword" placeholder="请输入新密码" class="handle-select mr10"></el-input>
+          <el-input v-model="form.newpassword" minlength=1 maxlength=16 placeholder="请输入新密码" class="handle-select mr10">
+          </el-input>
         </el-form-item>
         <el-form-item label="确认密码：" prop="verifypassword">
-          <el-input v-model="form.verifypassword" placeholder="请确认密码" class="handle-select mr10"></el-input>
+          <el-input v-model="form.verifypassword" minlength=1 maxlength=16 placeholder="请确认密码"
+            class="handle-select mr10"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="submit">确 定</el-button>
@@ -55,6 +58,17 @@
           ],
 
         },
+      }
+    },
+    watch: {
+      'form.oldpassword'() {
+        this.form.oldpassword = this.form.oldpassword.replace(/[\W]/g, '');
+      },
+      'form.newpassword'() {
+        this.form.newpassword = this.form.newpassword.replace(/[\W]/g, '');
+      },
+      'form.verifypassword'() {
+        this.form.verifypassword = this.form.verifypassword.replace(/[\W]/g, '');
       }
     },
     methods: {

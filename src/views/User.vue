@@ -21,24 +21,25 @@
       </div>
     </div>
     <div class="list">
-      <el-table :data="list"  class="table" ref="multipleTable" :header-cell-style="{background:'#eef1f6',color:'#333'}" header-cell-class-name="table-header">
-        <el-table-column prop="uid" label="ID" align="center"></el-table-column>
+      <el-table :data="list" class="table" ref="multipleTable" :header-cell-style="{background:'#eef1f6',color:'#333'}"
+        header-cell-class-name="table-header">
+        <el-table-column prop="uid" label="ID" width="200" align="center"></el-table-column>
         <el-table-column prop="fullname" label="姓名" align="center"></el-table-column>
-        <el-table-column prop="mobile" label="手机号" align="center"></el-table-column>
+        <el-table-column prop="mobile" label="手机号" width="150" align="center"></el-table-column>
         <el-table-column prop="registerNumber1" label="今日注册" align="center"></el-table-column>
         <el-table-column label="累计注册" align="center">
           <template slot-scope="scope">
             <div class="pointer"
-              @click="$router.push({path:'/registerDevice',query:{uid:scope.row.uid,fullname:scope.row.fullname}})">
+              @click="$router.push({path:'/registerDevice',query:{uid:scope.row.uid,mobile:scope.row.mobile,fullname:scope.row.fullname}})">
               {{scope.row.registerNumber2}}</div>
           </template>
         </el-table-column>
         <el-table-column label="操作" align="center" width="280">
           <template slot-scope="scope">
             <span @click="editInfo(scope.row)" class="pointer">编辑</span>
-            <span @click="deleteUserinfo(scope.row.uid)"  class="pointer">删除</span>
-         
-            <span @click="updateState(scope.row)"  class="pointer">
+            <span @click="deleteUserinfo(scope.row.uid)" class="pointer">删除</span>
+
+            <span @click="updateState(scope.row)" class="pointer">
               <span v-if="scope.row.state==2">启用</span>
               <span v-else-if="scope.row.state==1">禁用</span>
             </span>
@@ -48,10 +49,10 @@
       <Page :total="total" :PageNumber.sync="PageNumber" :PageSize.sync="PageSize" @current-change="changeCurrentPage"
         @size-change="handleSizeChange">
       </Page>
-      <el-dialog :title="show==1 ? '添加':'编辑'" center :visible.sync="dialogVisible" width="450px">
+      <el-dialog :title="show==1 ? '添加':'编辑'" center :visible.sync="dialogVisible" :close-on-click-modal="false" width="450px">
         <el-form ref="form" :rules="rules" :model="form" label-width="80px">
           <el-form-item prop="fullname" label="姓名">
-            <el-input v-model="form.fullname"></el-input>
+            <el-input v-model="form.fullname"  minlength="1" maxlength="20"></el-input>
           </el-form-item>
           <el-form-item prop="mobile" label="手机号">
             <el-input v-model="form.mobile" maxlength=11></el-input>
@@ -83,8 +84,19 @@
 
     data() {
       var validateMobile = (rule, value, callback) => {
-        if (!isPhone(value)) {
+        value = value.replace(/\ +/g, "").replace(/[\r\n]/g, "")
+        if (value == '') {
+          return callback(new Error("手机号不能为空"))
+        } else if (!isPhone(value)) {
           return callback(new Error("手机号不正确"))
+        } else {
+          return callback();
+        }
+      }
+      var validateFullname = (rule, value, callback) => {
+        value = value.replace(/\ +/g, "").replace(/[\r\n]/g, "")
+        if (value == '') {
+          return callback(new Error("姓名不能为空"))
         } else {
           return callback();
         }
@@ -105,10 +117,14 @@
           state: "1",
         },
         rules: {
-          fullname: [{ required: true, message: "请输入姓名", trigger: "blur" }],
+          fullname: [
+            { required: true, message: "请输入姓名", trigger: "blur" },
+            { trigger: "change", validator: validateFullname }
+
+          ],
           mobile: [
             { required: true, message: "请输入手机号", trigger: "blur" },
-            { trigger: "blur", validator: validateMobile }
+            { trigger: "change", validator: validateMobile }
           ],
           state: [{ required: true, message: "请选择状态", trigger: "blur" }],
           role: [{ required: true, }],
@@ -123,6 +139,9 @@
             state: '1'
           }
         }
+      },
+      'form.mobile'(){
+        this.form.mobile=this.form.mobile.replace(/[\W]/g,'');
       }
     },
     created() {
@@ -171,7 +190,6 @@
               this.$message.success(res.msg)
             }
           })
-
         })
       },
       getUserinfo() {
@@ -189,7 +207,14 @@
         })
       },
       exportUserinfo() {
-        this.$download('/backstage/ExportUserinfo').then(res => {
+        this.$download('/backstage/ExportUserinfo', {
+          uid: this.uid,
+          mobile: this.mobile,
+          fullname: this.fullname,
+          PageNumber: this.PageNumber,
+          PageSize: this.PageSize
+        }
+        ).then(res => {
           var blob = new Blob([res], { type: 'application/vnd.ms-excel application/x-excel' }); //type这里表示xlsx类型
           var downloadElement = document.createElement('a');
           var href = window.URL.createObjectURL(blob); //创建下载的链接
@@ -263,6 +288,6 @@
 
     padding: 30px 24px;
     background: #fff;
-    margin-top: 0;
-  } 
+    margin-top: 30px;
+  }
 </style>

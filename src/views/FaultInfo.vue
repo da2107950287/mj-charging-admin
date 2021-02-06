@@ -15,14 +15,16 @@
           </div>
           <div>
             <span>状态：</span>
-            <el-radio-group v-model="info.state">
+            <el-radio-group v-if="state==1" v-model="info.state">
               <el-radio :label='1'>未处理</el-radio>
               <el-radio :label='2'>已处理</el-radio>
             </el-radio-group>
+            <el-radio v-else-if="state==2">已处理</el-radio>
           </div>
           <div>
             <span>处理结果：</span>
-            <el-input type="textarea" :rows="2" style="width: 300px;" placeholder="请输入内容" v-model="info.result">
+            <el-input :disabled="state==2?true:false" type="textarea" :rows="2" style="width: 300px;" maxlength=200
+              placeholder="请输入内容" v-model="info.result">
             </el-input>
           </div>
         </div>
@@ -38,15 +40,17 @@
           </div>
           <div>
             <span>故障图片：</span>
-            <el-image style="width: 200px; height: 200px" :src="info.picture" :preview-src-list="[info.picture]">
+            <el-image v-if="info.picture" style="width: 200px; height: 200px" :src="info.picture" :preview-src-list="[info.picture]">
+            
             </el-image>
+            <div v-else slot="error" class="image-slot" >
+              未上传图片
+            </div>
           </div>
         </div>
-
-
       </div>
       <div class="btns">
-        <el-button class="mr20" size="small" type="primary" @click="updateFault">确 认</el-button>
+        <el-button v-if="state==1" class="mr20" size="small" type="primary" @click="updateFault">确 认</el-button>
         <el-button class="mr20" size="small" type="primary" @click="$router.go(-1)">取 消</el-button>
       </div>
     </div>
@@ -60,7 +64,7 @@
       return {
         faultId: this.$route.query.faultId,
         info: {},
-        state:''
+        state: ''
       }
     },
     created() {
@@ -74,21 +78,15 @@
         }).then(res => {
           if (res.code == 200) {
             this.info = res.data;
-            this.state=res.data.state;
+            this.state = res.data.state;
           }
         })
       },
 
       updateFault() {
-        if(this.state==2){
-          this.$message.error('故障已处理')
-          return false;
-        }
-        if(this.info.result==''){
-          this.$message.error('处理结果不能为空')
-          return false;
-        }
-        if(this.info.result==''){
+        
+
+        if (this.info.result.replace(/[ ]/g, "").replace(/[\r\n]/g, "").replace(/\u2006/g, '') == '') {
           this.$message.error('处理结果不能为空')
           return false;
         }
@@ -96,8 +94,12 @@
           faultId: this.faultId,
           state: this.info.state,
           result: this.info.result,
-        }).then(res=>{
-          this.$message.success(res.msg)
+        }).then(res => {
+          if(res.code==200){
+            this.$router.push('/fault')
+          }else{
+            this.$message.error(res.msg)
+          }
         })
       }
     },
@@ -141,8 +143,9 @@
       color: #000;
       line-height: 36px
     }
+
     .fault-info-left>div span:first-child,
-    .fault-info-right>div span:first-child{
+    .fault-info-right>div span:first-child {
       display: inline-block;
       width: 110px;
     }
@@ -155,5 +158,25 @@
   .btns {
     text-align: center;
     padding: 20px;
+  }
+
+  .el-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f5f7fa;
+    color: #c0c4cc;
+
+  }
+
+  .image-slot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f5f7fa;
+    color: #c0c4cc;
+    width: 200px; 
+    height: 200px
+
   }
 </style>

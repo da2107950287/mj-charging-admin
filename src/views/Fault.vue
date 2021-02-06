@@ -11,7 +11,6 @@
       <div>
         <label class="label" for="">SN 码</label>
         <el-input v-model="deviceId" size="small" placeholder="" clearable class="handle-search mr20"></el-input>
-
       </div>
       <div>
         <label class="label" for="">状态</label>
@@ -28,27 +27,30 @@
       </div>
     </div>
     <div class="list">
-      <el-table :data="list" :row-class-name="tableRowClassName" :header-cell-style="{background:'#eef1f6',color:'#333'}" class="table" ref="multipleTable"
+      <el-table :data="list" :row-class-name="tableRowClassName"
+        :header-cell-style="{background:'#eef1f6',color:'#333'}" class="table" ref="multipleTable"
         header-cell-class-name="table-header">
         <el-table-column label="ID" type="index" width="200" align="center">
           <template slot-scope="scope">
-            <div @click="$router.push({path:'/faultInfo',query:{faultId:scope.row.faultId}})">{{scope.row.index}}</div>
+            <div class="blue pointer" @click="$router.push({path:'/faultInfo',query:{faultId:scope.row.faultId}})">
+              {{scope.row.index}}</div>
           </template>
         </el-table-column>
-
         <el-table-column prop="deviceId" label="SN码" align="center"></el-table-column>
-        <el-table-column prop="mobile" label="客户手机号" align="center"></el-table-column>
-        <el-table-column prop="content" label="问题描述" align="center"></el-table-column>
-        <el-table-column label="问题图片" align="center">
+        <el-table-column prop="mobile" label="客户手机号" width="150" align="center"></el-table-column>
+        <el-table-column prop="content" label="问题描述" width="200" show-overflow-tooltip align="center"></el-table-column>
+        <el-table-column label="问题图片" width="120" align="center">
           <template slot-scope="scope">
             <el-image style="width: 100px; height: 100px" :src="scope.row.picture"
               :preview-src-list="[scope.row.picture]">
+              <div slot="error" class="image-slot">
+                未上传图片
+              </div>
             </el-image>
-
             <!-- <img :src="scope.row.picture" :preview-src-list='' style="width: 100px;height: 100px;" alt=""> -->
           </template>
         </el-table-column>
-        <el-table-column prop="faultTime" label="提交时间" align="center"></el-table-column>
+        <el-table-column prop="faultTime" label="提交时间" width="200" align="center"></el-table-column>
         <el-table-column label="状态" align="center">
           <template slot-scope="scope">
             <div v-if="scope.row.state==1">未处理</div>
@@ -57,9 +59,11 @@
         </el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
-            <div class="pointer" :style="{color: scope.row.state==1 ?' #02a7f0':'#aaa'}"
-              @click="$router.push({path:'/faultInfo',query:{faultId:scope.row.faultId}})">处理</div>
-
+            <div class="pointer" style="color:#02a7f0"
+              @click="$router.push({path:'/faultInfo',query:{faultId:scope.row.faultId}})">
+            <span v-if="scope.row.state==1 ">处理</span>
+            <span v-else>查看详情</span>
+          </div>
           </template>
         </el-table-column>
 
@@ -116,7 +120,12 @@
         })
       },
       exportFault() {
-        this.$download('/backstage/ExportFault').then(res => {
+        this.$download('/backstage/ExportFault', {
+          hotId: this.hotId,
+          deviceId: this.deviceId,
+          state: this.state,
+
+        }).then(res => {
           var blob = new Blob([res], { type: 'application/vnd.ms-excel application/x-excel' }); //type这里表示xlsx类型
           var downloadElement = document.createElement('a');
           var href = window.URL.createObjectURL(blob); //创建下载的链接
@@ -160,18 +169,20 @@
     cursor: pointer;
   }
 
-  /* .search-box {
-    width: 100%;
-    padding: 24px 29px;
-    
-    background: #FFFFFF;
-    box-shadow: 0px 11px 20px 0px rgba(0, 0, 0, 0.05);
-    border-radius: 11px;
+  .blue {
+    color: #02a7f0
   }
 
-  .list {
-    margin-top: 30px;
-    padding: 30px 24px;
-    background: #fff;
-  } */
+  .el-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f5f7fa;
+    color: #c0c4cc;
+
+  }
+  .image-slot{
+width: 100%;
+height: 100%;
+  }
 </style>
